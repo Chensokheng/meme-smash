@@ -1,82 +1,75 @@
-import Head from 'next/head'
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+export default function index() {
+	const [memes, setMemes] = useState([]);
+	const [selected, setSelected] = useState();
 
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
+	useEffect(() => {
+		getMeme(2).then((data) => {
+			setMemes(data.memes);
+		});
 
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="p-3 font-mono text-lg bg-gray-100 rounded-md">
-            pages/index.js
-          </code>
-        </p>
+		document.addEventListener("keydown", function (event) {
+			console.log(event);
+			if (event.key === "ArrowRight") {
+				updateMeme(1);
+			} else if (event.key === "ArrowLeft") {
+				updateMeme(0);
+			}
+		});
+	}, []);
 
-        <div className="flex flex-wrap items-center justify-around max-w-4xl mt-6 sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and API.
-            </p>
-          </a>
+	const getMeme = (numberOfMeme) => {
+		const url = `https://meme-api.herokuapp.com/gimme/${numberOfMeme}`;
+		return fetch(url)
+			.then((response) => response.json())
+			.then((data) => data);
+	};
+	const updateMeme = (index) => {
+		getMeme(1).then((data) => {
+			setMemes((memes) =>
+				index === 0
+					? [memes[index], data.memes[0]]
+					: [data.memes[0], memes[index]]
+			);
+			setSelected(index);
+		});
+	};
 
-          <a
-            href="https://nextjs.org/learn"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className="flex items-center justify-center w-full h-24 border-t">
-        <a
-          className="flex items-center justify-center"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="h-4 ml-2" />
-        </a>
-      </footer>
-    </div>
-  )
+	return (
+		<div className="bg-black min-h-screen flex flex-col w-full justify-center items-center ">
+			<h1 className="text-5xl font-bold text-white">Left or right</h1>
+			<div className="w-full flex justify-center items-center gap-5 mt-20 flex-col sm:flex-row">
+				{memes.map((meme, index) => {
+					return (
+						<div
+							className="sm:w-4/12 w-full"
+							key={index}
+							onClick={() => {
+								updateMeme(index);
+							}}
+						>
+							<h1 className="text-white">Author: {meme.author}</h1>
+							<div
+								className={`w-full h-45vh sm:h-100 bg-black cursor-pointer border-2 relative ${
+									selected === index ? "border-8 border-green-500" : ""
+								}`}
+							>
+								<Image
+									src={meme.preview[2] ?? meme.preview[1] ?? "/404.png"}
+									layout="fill"
+									objectFit="contain"
+									priority
+								/>
+							</div>
+							<a href={meme.postLink} className="text-blue-500">
+								PostLint: {meme.postLink}
+							</a>
+						</div>
+					);
+				})}
+			</div>
+		</div>
+	);
 }

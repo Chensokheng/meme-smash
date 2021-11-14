@@ -11,7 +11,6 @@ export default function index() {
 		});
 
 		document.addEventListener("keydown", function (event) {
-			console.log(event);
 			if (event.key === "ArrowRight") {
 				updateMeme(1);
 			} else if (event.key === "ArrowLeft") {
